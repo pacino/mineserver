@@ -52,11 +52,8 @@
 #include "config.h"
 #include "physics.h"
 #include "constants.h"
-<<<<<<< HEAD
-=======
 #include "plugin.h"
 #include "hook.h"
->>>>>>> upstream/master
 
 Chat* Chat::m_chat;
 
@@ -220,61 +217,18 @@ bool Chat::handleMsg(User *user, std::string msg)
   Plugin::argsChatRecv* args = new Plugin::argsChatRecv(timeStamp, user, msg);
   if (Plugin::get()->hookChatRecv->doOne(args))
   {
-<<<<<<< HEAD
-    // Decorate server message
-    Screen::get()->log(LOG_CHAT, "[!] " + msg.substr(1));
-    msg = MC_COLOR_RED + "[!] " + MC_COLOR_GREEN + msg.substr(1);
-    this->sendMsg(user, msg, ALL);
-  }
-
-  // Adminchat
-  else if(msg[0] == ADMINCHATPREFIX && IS_ADMIN(user->permissions))
-  {
-    Screen::get()->log(LOG_CHAT, "[@] <"+ user->nick + "> " + msg.substr(1));
-    msg = timeStamp +  MC_COLOR_RED + " [@]" + MC_COLOR_WHITE + " <"+ MC_COLOR_DARK_MAGENTA + user->nick + MC_COLOR_WHITE + "> " + msg.substr(1);
-    this->sendMsg(user, msg, ADMINS);
-  }
-
-  // Command
-  else if(msg[0] == CHATCMDPREFIX)
-  {
-    std::deque<std::string> cmd = this->parseCmd(msg.substr(1));
-
-    std::string command         = cmd[0];
-    cmd.pop_front();
-=======
     return false;
   }
 
   char prefix = msg[0];
->>>>>>> upstream/master
 
   switch(prefix)
   {
-<<<<<<< HEAD
-		if(user->isAbleToCommunicate("chat") == false)
-    {
-			return true;
-		}
-    else
-    {
-      // Check for Admins or Server Console
-      if (user->UID == SERVER_CONSOLE_UID)
-      {
-        Screen::get()->log(LOG_CHAT, user->nick + " " + msg);
-        msg = timeStamp + " " + MC_COLOR_RED + user->nick + MC_COLOR_WHITE + " " + msg;
-      }
-      else if(IS_ADMIN(user->permissions))
-      {
-        Screen::get()->log(LOG_CHAT, "<"+ user->nick + "> " + msg);
-        msg = timeStamp + " <"+ MC_COLOR_DARK_MAGENTA + user->nick + MC_COLOR_WHITE + "> " + msg;
-=======
     // Servermsg (Admin-only)
     case SERVERMSGPREFIX:
       if(IS_ADMIN(user->permissions))
       {
         handleServerMsg(user, msg, timeStamp);
->>>>>>> upstream/master
       }
       break;
 
@@ -282,18 +236,10 @@ bool Chat::handleMsg(User *user, std::string msg)
     case ADMINCHATPREFIX:
       if(IS_ADMIN(user->permissions))
       {
-<<<<<<< HEAD
-        Screen::get()->log(LOG_CHAT, "<"+ user->nick + "> " + dtos(user->UID) + " " + msg);
-        msg = timeStamp + " <"+ user->nick + "> " + msg;
-=======
         handleAdminChatMsg(user, msg, timeStamp);
->>>>>>> upstream/master
       }
       break;
 
-<<<<<<< HEAD
-    this->sendMsg(user, msg, ALL);
-=======
     // Command
     case CHATCMDPREFIX:
       handleCommandMsg(user, msg, timeStamp);
@@ -303,7 +249,6 @@ bool Chat::handleMsg(User *user, std::string msg)
     default:
       handleChatMsg(user, msg, timeStamp);
       break;
->>>>>>> upstream/master
   }
 
   return true;
