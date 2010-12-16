@@ -1,12 +1,5 @@
 # admins
 [Server]
-<<<<<<< HEAD
-Psoden
-fador
-ReDucTor
-Pacino
-=======
->>>>>>> upstream/master
 
 # ops
 
