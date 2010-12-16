@@ -52,21 +52,41 @@
 #include "config.h"
 #include "physics.h"
 #include "constants.h"
+<<<<<<< HEAD
+=======
+#include "plugin.h"
+#include "hook.h"
+>>>>>>> upstream/master
 
-Chat* Chat::_instance;
+Chat* Chat::m_chat;
 
 void Chat::free()
 {
-   if(_instance)
-   {
-      delete _instance;
-      _instance = 0;
-   }
+  if(m_chat)
+  {
+    delete m_chat;
+    m_chat = 0;
+  }
+}
+
+// ------------------------------------------- //
+// CALLBACK EXAMPLE - WILL NOT BE HERE FOREVER //
+// ------------------------------------------- //
+bool callbacktest(std::string timestamp, User* user, std::string text)
+{
+  Screen::get()->log("Derp! @"+timestamp+": "+text);
+  return false;
 }
 
 Chat::Chat()
 {
   registerStandardCommands();
+
+  // ------------------------------------------------------------ //
+  // AGAIN, PART OF THE CALLBACK EXAMPLE.                         //
+  // THIS WOULD USUALLY BE CALLED IN THE INITIALISER OF A PLUGIN. //
+  // ------------------------------------------------------------ //
+  Plugin::get()->hookChatRecv->addCallback(&callbacktest);
 }
 
 void Chat::registerCommand(Command *command)
@@ -197,13 +217,10 @@ bool Chat::handleMsg(User *user, std::string msg)
   std::string timeStamp (asctime(Tm));
   timeStamp = timeStamp.substr(11, 5);
 
-  //
-  // Chat commands
-  //
-
-  // Servermsg (Admin-only)
-  if(msg[0] == SERVERMSGPREFIX && IS_ADMIN(user->permissions))
+  Plugin::argsChatRecv* args = new Plugin::argsChatRecv(timeStamp, user, msg);
+  if (Plugin::get()->hookChatRecv->doOne(args))
   {
+<<<<<<< HEAD
     // Decorate server message
     Screen::get()->log(LOG_CHAT, "[!] " + msg.substr(1));
     msg = MC_COLOR_RED + "[!] " + MC_COLOR_GREEN + msg.substr(1);
@@ -225,21 +242,16 @@ bool Chat::handleMsg(User *user, std::string msg)
 
     std::string command         = cmd[0];
     cmd.pop_front();
-
-    // User commands
-    CommandList::iterator iter;
-    if((iter = m_memberCommands.find(command)) != m_memberCommands.end())
-    {
-      iter->second->callback(user, command, cmd);
-    }
-    else if(IS_ADMIN(user->permissions) && (iter = m_adminCommands.find(command)) != m_adminCommands.end())
-    {
-      iter->second->callback(user, command, cmd);
-    }
+=======
+    return false;
   }
-  // Normal message
-  else
+
+  char prefix = msg[0];
+>>>>>>> upstream/master
+
+  switch(prefix)
   {
+<<<<<<< HEAD
 		if(user->isAbleToCommunicate("chat") == false)
     {
 			return true;
@@ -256,18 +268,106 @@ bool Chat::handleMsg(User *user, std::string msg)
       {
         Screen::get()->log(LOG_CHAT, "<"+ user->nick + "> " + msg);
         msg = timeStamp + " <"+ MC_COLOR_DARK_MAGENTA + user->nick + MC_COLOR_WHITE + "> " + msg;
-      }
-      else
+=======
+    // Servermsg (Admin-only)
+    case SERVERMSGPREFIX:
+      if(IS_ADMIN(user->permissions))
       {
+        handleServerMsg(user, msg, timeStamp);
+>>>>>>> upstream/master
+      }
+      break;
+
+    // Admin message
+    case ADMINCHATPREFIX:
+      if(IS_ADMIN(user->permissions))
+      {
+<<<<<<< HEAD
         Screen::get()->log(LOG_CHAT, "<"+ user->nick + "> " + dtos(user->UID) + " " + msg);
         msg = timeStamp + " <"+ user->nick + "> " + msg;
+=======
+        handleAdminChatMsg(user, msg, timeStamp);
+>>>>>>> upstream/master
       }
-    }
+      break;
 
+<<<<<<< HEAD
     this->sendMsg(user, msg, ALL);
+=======
+    // Command
+    case CHATCMDPREFIX:
+      handleCommandMsg(user, msg, timeStamp);
+      break;
+
+    // Normal chat message
+    default:
+      handleChatMsg(user, msg, timeStamp);
+      break;
+>>>>>>> upstream/master
   }
 
   return true;
+}
+
+void Chat::handleServerMsg(User* user, std::string msg, const std::string& timeStamp)
+{
+  // Decorate server message
+  Screen::get()->log(LOG_CHAT, "[!] " + msg.substr(1));
+  msg = MC_COLOR_RED + "[!] " + MC_COLOR_GREEN + msg.substr(1);
+  this->sendMsg(user, msg, ALL);
+}
+
+void Chat::handleAdminChatMsg(User* user, std::string msg, const std::string& timeStamp)
+{
+  Screen::get()->log(LOG_CHAT, "[@] <"+ user->nick + "> " + msg.substr(1));
+  msg = timeStamp +  MC_COLOR_RED + " [@]" + MC_COLOR_WHITE + " <"+ MC_COLOR_DARK_MAGENTA + user->nick + MC_COLOR_WHITE + "> " + msg.substr(1);
+  this->sendMsg(user, msg, ADMINS);
+}
+
+void Chat::handleCommandMsg(User* user, std::string msg, const std::string& timeStamp)
+{
+  std::deque<std::string> cmd = this->parseCmd(msg.substr(1));
+
+  std::string command = cmd[0];
+  cmd.pop_front();
+
+  // User commands
+  CommandList::iterator iter;
+  if((iter = m_memberCommands.find(command)) != m_memberCommands.end())
+  {
+    iter->second->callback(user, command, cmd);
+  }
+  else if(IS_ADMIN(user->permissions) && (iter = m_adminCommands.find(command)) != m_adminCommands.end())
+  {
+    iter->second->callback(user, command, cmd);
+  }
+}
+
+void Chat::handleChatMsg(User* user, std::string msg, const std::string& timeStamp)
+{
+  if(user->isAbleToCommunicate("chat") == false)
+  {
+    return;
+  }
+
+  // Check for Admins or Server Console
+  if (user->UID == SERVER_CONSOLE_UID)
+  {
+    Screen::get()->log(LOG_CHAT, user->nick + " " + msg);
+    msg = timeStamp + " " + MC_COLOR_RED + user->nick + MC_COLOR_WHITE + " " + msg;
+  }
+  else if(IS_ADMIN(user->permissions))
+  {
+    Screen::get()->log(LOG_CHAT, "<"+ user->nick + "> " + msg);
+    msg = timeStamp + " <"+ MC_COLOR_DARK_MAGENTA + user->nick + MC_COLOR_WHITE + "> " + msg;
+  }
+  else
+  {
+    Screen::get()->log(LOG_CHAT, "<"+ user->nick + "> " + dtos(user->UID) + " " + msg);
+    msg = timeStamp + " <"+ user->nick + "> " + msg;
+  }
+
+  this->sendMsg(user, msg, ALL);
 }
 
 bool Chat::sendMsg(User *user, std::string msg, MessageTarget action)

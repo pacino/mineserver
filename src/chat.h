@@ -42,7 +42,7 @@ public:
     OPS,
     GUESTS
   };
-  typedef void (*CommandCallback)(User *, std::string, std::deque<std::string>);
+  typedef void (*CommandCallback)(User*, std::string, std::deque<std::string>);
 
   /**
    * Chat command a user can enter.
@@ -66,25 +66,32 @@ public:
     }
   };
 
-  bool handleMsg( User *user, std::string msg );
-  bool sendMsg( User *user, std::string msg, MessageTarget action = ALL );
-  bool sendUserlist( User *user );
+  bool handleMsg(User* user, std::string msg);
+  void handleServerMsg(User* user, std::string msg, const std::string& timeStamp);
+  void handleAdminChatMsg(User* user, std::string msg, const std::string& timeStamp);
+  void handleCommandMsg(User* user, std::string msg, const std::string& timeStamp);
+  void handleChatMsg(User* user, std::string msg, const std::string& timeStamp);
+
+  bool sendMsg(User* user, std::string msg, MessageTarget action = ALL);
+  bool sendUserlist(User* user);
   bool checkMotd(std::string motdFile);
-  void registerCommand(Command *command);
-  void sendHelp(User *user, std::deque<std::string> args);
+  void registerCommand(Command* command);
+  void sendHelp(User* user, std::deque<std::string> args);
 
   static Chat* get()
   {
-    if(!_instance) {
-      _instance = new Chat();
+    if(!m_chat)
+    {
+      m_chat = new Chat();
     }
-    return _instance;
+
+    return m_chat;
   }
 
   void free();
 
 private:
-  static Chat *_instance;
+  static Chat* m_chat;
 
   Chat();
   void registerStandardCommands();

@@ -40,14 +40,14 @@
 #include "blocks/tracks.h"
 #include "blocks/chest.h"
 
-Plugin* Plugin::mPlugin;
+Plugin* Plugin::m_plugin;
 
 void Plugin::free()
 {
-   if (mPlugin)
+   if (m_plugin)
    {
-      delete mPlugin;
-      mPlugin = 0;
+      delete m_plugin;
+      m_plugin = NULL;
    }
 }
 
@@ -110,7 +110,6 @@ void Plugin::init()
    setBlockCallback(BLOCK_DIAMOND_ORE, call);
    setBlockCallback(BLOCK_GLOWING_REDSTONE_ORE, call);
    setBlockCallback(BLOCK_REDSTONE_ORE, call);
-   setBlockCallback(BLOCK_GLASS, call);
 
    /* Falling blocks (sand, etc) */
    call.reset();
