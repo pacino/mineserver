@@ -490,7 +490,7 @@ void setTime(User *user, std::string command, std::deque<std::string> args)
       User::all()[0]->sendAll((uint8*)pkt.getWrite(), pkt.getWriteLen());
     }
 
-    Chat::get()->handleMsg(user, "% World time changed.");
+    Chat::get()->handleMsg(user, "%World time changed.");
   }
   else
   {
